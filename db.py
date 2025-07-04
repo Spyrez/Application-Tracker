@@ -56,6 +56,11 @@ def get_all_applications():
     conn.close()
     return rows
 
+
+
+
+
+
 def update_application_in_db(app_id, company, position, status):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()

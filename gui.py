@@ -28,12 +28,23 @@ class JobTrackerApp:
         self.status_combo.grid(row=2, column=1)
 
         # BUTTONS
-        self.add_button = tk.Button(root, text="Add Application", command=self.add_application)
-        self.add_button.grid(row=3, column=1, pady=5) # Add button to add application to the database
-        self.edit_save_button = tk.Button(root, text="Edit Selected", command=self.toggle_edit_or_save)
+        # Add Button
+        self.add_button = tk.Button(
+            root,
+            text="Add Application",
+            command=self.add_application,
+            fg="black",
+            bg="#90ee90" # Light green color for the Add button
+            )
+        self.add_button.grid(row=3, column=1, pady=5) # Add button location in the grid
+        # Edit/Save Button
+        self.edit_save_button = tk.Button(root,
+            text="Edit Selected",
+            command=self.toggle_edit_or_save,
+            fg="black",
+            bg="#87cefa" # Light blue color for the Edit button
+        )
         self.edit_save_button.grid(row=3, column=0, pady=5) # Edit button to edit selected application
-
-
 
         # Treeview table to display applications
         # It has three columns: Company, Position, and Status
@@ -47,6 +58,7 @@ class JobTrackerApp:
         # Displays the applications in the treeview when opening the app
         # Calls the refresh_applications method to populate the treeview with data from the database
         self.refresh_applications()
+
 
 
 
@@ -73,13 +85,16 @@ class JobTrackerApp:
         self.refresh_applications()
         self.company_entry.delete(0, tk.END) # Clear the company entry field
         self.position_entry.delete(0, tk.END) # Clear the position entry field
-        self.status_var.set("Pending") # Reset the status combobox to "Pending"
+        self.status_combo.current(0) # Reset the status combobox to "Pending"
 
 
 
 
 
-    def load_selected_for_edit(self):
+
+    # This function is called when the user clicks the "Edit Selected" button
+    # It retrieves the selected application from the treeview and populates the entry fields for editing
+    def begin_edit_mode(self):
         selected = self.tree.focus()  # Get the currently selected item in the treeview
         if not selected:
             messagebox.showwarning("Selection Error", "Please select an application to edit.")
@@ -89,7 +104,7 @@ class JobTrackerApp:
         self.selected_id = self.tree.item(selected, "text") # Row ID will be stored in text
 
         self.company_entry.delete(0, tk.END)  # Clear the company entry field
-        self.company_entry.insert(0, values[0])  # Insert the company name into
+        self.company_entry.insert(0, values[0])  # Insert the company name into the company entry field
 
         self.position_entry.delete(0, tk.END)  # Clear the position entry field
         self.position_entry.insert(0, values[1])  # Insert the position into the position entry field
@@ -101,61 +116,34 @@ class JobTrackerApp:
 
 
 
-
     def toggle_edit_or_save(self):
         if not self.editing_mode:
             # START EDITING
-            selected = self.tree.focus()
-            if not selected:
-                messagebox.showerror("Selection Error", "Please select an application to edit.")
-                return
-            
-            values = self.tree.item(selected, "values")
-            self.selected_id = self.tree.item(selected, "text")  # Store the ID of the selected application
+            self.begin_edit_mode()
 
-            self.company_entry.delete(0, tk.END)
-            self.company_entry.insert(0, values[0])
-
-            self.position_entry.delete(0, tk.END)
-            self.position_entry.insert(0, values[1])
-
-            self.status_var.set(values[2]) # Set the status combobox to the current status of the selected application
-            
             # Set the editing mode to True and change the button text to "Save Changes"
             self.editing_mode = True
-            self.edit_save_button.config(text="Save Changes")
-
+            self.edit_save_button.config(text="Save Changes", bg="#f4c542") # light yellow/orange color for the Save button
             # Disable the Add button while editing
-            self.add_button.config(state="disabled")
+            self.add_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Add button
         else:
             # SAVE CHANGES
-            company = self.company_entry.get().strip()
-            position = self.position_entry.get().strip()
-            status = self.status_var.get()
+            self.save_edited_application()
 
-            if not company or not position:
-                messagebox.showerror("Input Error", "Please enter BOTH company and position.")
-                return
-            
-            update_application_in_db(int(self.selected_id), company, position, status)
-            self.refresh_applications()
-
-            # RESET FIELDS
-            self.company_entry.delete(0, tk.END)
-            self.position_entry.delete(0, tk.END)
-            self.status_combo.current(0)  # Reset the status combobox to "Pending"
-            self.selected_id = None
-            
             # Set the editing mode to False and change the button text to "Edit Selected"
             self.editing_mode = False
-            self.edit_save_button.config(text="Edit Selected")
-
+            self.edit_save_button.config(text="Edit Selected", bg="#87cefa") # Back to Light blue color for the Edit button
             # Re-enable the Add button
-            self.add_button.config(state="normal")
+            self.add_button.config(state="normal", bg="#90ee90") # Back to Light green color for the Add button
 
 
 
-    def update_application(self):
+
+
+
+    # This function is called when the user clicks the "Save Changes" button
+    # It updates the selected application in the database with the new values
+    def save_edited_application(self):
         if self.selected_id is None:
             messagebox.showwarning("Selection Error", "Please select an application to update.")
             return

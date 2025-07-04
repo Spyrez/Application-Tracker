@@ -28,10 +28,26 @@ class JobTrackerApp:
         self.status_combo.grid(row=2, column=1)
 
         # BUTTONS
-        self.add_button = tk.Button(root, text="Add Application", command=self.add_application)
-        self.add_button.grid(row=3, column=1, pady=5) # Add button to add application to the database
-        self.edit_save_button = tk.Button(root, text="Edit Selected", command=self.toggle_edit_or_save)
+        # Add Button
+        self.add_button = tk.Button(
+            root,
+            text="Add Application",
+            command=self.add_application,
+            fg="black",
+            bg="#90ee90" # Light green color for the Add button
+            )
+        self.add_button.grid(row=3, column=1, pady=5) # Add button location in the grid
+        # Edit/Save Button
+        self.edit_save_button = tk.Button(root,
+            text="Edit Selected",
+            command=self.toggle_edit_or_save,
+            fg="black",
+            bg="#87cefa" # Light blue color for the Edit button
+        )
         self.edit_save_button.grid(row=3, column=0, pady=5) # Edit button to edit selected application
+
+
+
 
 
 
@@ -47,6 +63,7 @@ class JobTrackerApp:
         # Displays the applications in the treeview when opening the app
         # Calls the refresh_applications method to populate the treeview with data from the database
         self.refresh_applications()
+
 
 
 
@@ -79,6 +96,7 @@ class JobTrackerApp:
 
 
 
+    # FIXME: THIS IS DUPLICATE CODE FROM toggle_edit_or_save
     def load_selected_for_edit(self):
         selected = self.tree.focus()  # Get the currently selected item in the treeview
         if not selected:
@@ -95,7 +113,6 @@ class JobTrackerApp:
         self.position_entry.insert(0, values[1])  # Insert the position into the position entry field
 
         self.status_var.set(values[2])  # Set the status combobox to the current status of the selected application
-
 
 
 
@@ -123,10 +140,10 @@ class JobTrackerApp:
             
             # Set the editing mode to True and change the button text to "Save Changes"
             self.editing_mode = True
-            self.edit_save_button.config(text="Save Changes")
+            self.edit_save_button.config(text="Save Changes", bg="#f4c542") # light yellow/orange color for the Save button
 
             # Disable the Add button while editing
-            self.add_button.config(state="disabled")
+            self.add_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Add button
         else:
             # SAVE CHANGES
             company = self.company_entry.get().strip()
@@ -148,13 +165,16 @@ class JobTrackerApp:
             
             # Set the editing mode to False and change the button text to "Edit Selected"
             self.editing_mode = False
-            self.edit_save_button.config(text="Edit Selected")
+            self.edit_save_button.config(text="Edit Selected", bg="#87cefa") # Back to Light blue color for the Edit button
 
             # Re-enable the Add button
-            self.add_button.config(state="normal")
+            self.add_button.config(state="normal", bg="#90ee90") # Back to Light green color for the Add button
 
 
 
+
+
+    # FIXME: THIS IS DUPLICATE CODE FROM toggle_edit_or_save
     def update_application(self):
         if self.selected_id is None:
             messagebox.showwarning("Selection Error", "Please select an application to update.")

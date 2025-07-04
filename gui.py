@@ -66,6 +66,7 @@ class JobTrackerApp:
         self.refresh_applications()
         self.company_entry.delete(0, tk.END) # Clear the company entry field
         self.position_entry.delete(0, tk.END) # Clear the position entry field
+        self.status_var.set("Pending") # Reset the status combobox to "Pending"
 
 
 

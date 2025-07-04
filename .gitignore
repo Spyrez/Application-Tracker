@@ -1,2 +1,7 @@
-__pycache__/gui.cpython-311.pyc
-__pycache__/db.cpython-311.pyc
+# Python
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+.env
+venv/

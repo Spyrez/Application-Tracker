@@ -51,7 +51,23 @@ def insert_application(company, position, status="Pending"):
 def get_all_applications():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT company, position, status FROM applications')
+    cursor.execute('SELECT id, company, position, status FROM applications')
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+
+
+
+
+
+def update_application_in_db(app_id, company, position, status):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE applications
+        SET company = ?, position = ?, status = ?
+        WHERE id = ?
+    ''', (company, position, status, app_id))
+    conn.commit()
+    conn.close()

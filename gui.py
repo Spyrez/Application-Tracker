@@ -7,6 +7,7 @@ class JobTrackerApp:
         self.root = root
         self.root.title("Job Application Tracker") # Set the title of the window
         self.selected_id = None # Variable to store the ID of the selected application for editing
+        self.editing_mode = False # Flag to indicate if the app is in editing mode
 
         # Company Label and Entry
         tk.Label(root, text="Company Name").grid(row=0, column=0)
@@ -27,9 +28,10 @@ class JobTrackerApp:
         self.status_combo.grid(row=2, column=1)
 
         # BUTTONS
-        tk.Button(root, text="Add Application", command=self.add_application).grid(row=3, column=0, pady=5) # Add button to add application to the database
-        tk.Button(root, text="Edit Selected", command=self.load_selected_for_edit).grid(row=3, column=1, pady=5) # Edit button to edit selected application
-        tk.Button(root, text="Update Application", command=self.update_application).grid(row=5, columnspan=2, pady=10) # Update button to update application in the database
+        self.add_button = tk.Button(root, text="Add Application", command=self.add_application)
+        self.add_button.grid(row=3, column=1, pady=5) # Add button to add application to the database
+        self.edit_save_button = tk.Button(root, text="Edit Selected", command=self.toggle_edit_or_save)
+        self.edit_save_button.grid(row=3, column=0, pady=5) # Edit button to edit selected application
 
 
 
@@ -94,6 +96,62 @@ class JobTrackerApp:
 
         self.status_var.set(values[2])  # Set the status combobox to the current status of the selected application
 
+
+
+
+
+
+
+    def toggle_edit_or_save(self):
+        if not self.editing_mode:
+            # START EDITING
+            selected = self.tree.focus()
+            if not selected:
+                messagebox.showerror("Selection Error", "Please select an application to edit.")
+                return
+            
+            values = self.tree.item(selected, "values")
+            self.selected_id = self.tree.item(selected, "text")  # Store the ID of the selected application
+
+            self.company_entry.delete(0, tk.END)
+            self.company_entry.insert(0, values[0])
+
+            self.position_entry.delete(0, tk.END)
+            self.position_entry.insert(0, values[1])
+
+            self.status_var.set(values[2]) # Set the status combobox to the current status of the selected application
+            
+            # Set the editing mode to True and change the button text to "Save Changes"
+            self.editing_mode = True
+            self.edit_save_button.config(text="Save Changes")
+
+            # Disable the Add button while editing
+            self.add_button.config(state="disabled")
+        else:
+            # SAVE CHANGES
+            company = self.company_entry.get().strip()
+            position = self.position_entry.get().strip()
+            status = self.status_var.get()
+
+            if not company or not position:
+                messagebox.showerror("Input Error", "Please enter BOTH company and position.")
+                return
+            
+            update_application_in_db(int(self.selected_id), company, position, status)
+            self.refresh_applications()
+
+            # RESET FIELDS
+            self.company_entry.delete(0, tk.END)
+            self.position_entry.delete(0, tk.END)
+            self.status_combo.current(0)  # Reset the status combobox to "Pending"
+            self.selected_id = None
+            
+            # Set the editing mode to False and change the button text to "Edit Selected"
+            self.editing_mode = False
+            self.edit_save_button.config(text="Edit Selected")
+
+            # Re-enable the Add button
+            self.add_button.config(state="normal")
 
 
 

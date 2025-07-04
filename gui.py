@@ -27,7 +27,6 @@ class JobTrackerApp:
         self.status_combo.grid(row=2, column=1)
 
         # BUTTONS
-        # Add Application Button, which calls the add_application method when clicked
         tk.Button(root, text="Add Application", command=self.add_application).grid(row=3, column=0, pady=5) # Add button to add application to the database
         tk.Button(root, text="Edit Selected", command=self.load_selected_for_edit).grid(row=3, column=1, pady=5) # Edit button to edit selected application
         tk.Button(root, text="Update Application", command=self.update_application).grid(row=5, columnspan=2, pady=10) # Update button to update application in the database

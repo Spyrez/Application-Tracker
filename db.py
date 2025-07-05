@@ -45,6 +45,18 @@ def insert_application(company, position, status="Pending"):
 
 
 
+def delete_application_in_db(app_id):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM applications WHERE id = ?', (app_id,))
+    conn.commit()
+    conn.close()
+
+
+
+
+
+
 # This function will grab all applications from the database
 # It returns a list of tuples containing the company name, position, and status for each application
 # This can be used to display all applications in the GUI or for any other purpose

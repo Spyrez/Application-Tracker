@@ -146,7 +146,7 @@ class JobTrackerApp:
             self.edit_save_button.config(text="Edit Selected", bg="#87cefa") # Back to Light blue color for the Edit button
             # Re-enable the Add button
             self.add_button.config(state="normal", bg="#90ee90") # Back to Light green color for the Add button
-            self.delete_button.config(state="normal", bg="#ffcccb") # Back to Light red color for the Delete button
+            self.delete_button.config(state="normal", bg="#ff6d6a") # Back to Light red color for the Delete button
 
 
 

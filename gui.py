@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from db import insert_application, get_all_applications, update_application_in_db, delete_application_in_db
+from db import insert_application_in_db, get_all_applications_from_db, update_application_in_db, delete_application_in_db
 
 class JobTrackerApp:
     def __init__(self, root):
@@ -76,11 +76,8 @@ class JobTrackerApp:
 
 
     def add_application(self):
-        # Get input values
-        # Strip whitespace from company and position entries
-        company = self.company_entry.get().strip()
-        position = self.position_entry.get().strip()
-        status = self.status_var.get()
+        # Get input values from the entry fields
+        company, position, status = self.get_form_entry_values()
 
         # Check if both company and position are provided
         # If either is empty, show an error message
@@ -90,12 +87,10 @@ class JobTrackerApp:
 
         # Calls function from 'db.py' to insert the application into the database
         # It passes the company, position, and status
-        insert_application(company, position, status)
+        insert_application_in_db(company, position, status)
         # After inserting, it refreshes the treeview to show the latest applications
         self.refresh_applications()
-        self.company_entry.delete(0, tk.END) # Clear the company entry field
-        self.position_entry.delete(0, tk.END) # Clear the position entry field
-        self.status_combo.current(0) # Reset the status combobox to "Pending"
+        self.clear_entry_fields()
 
 
 
@@ -121,6 +116,13 @@ class JobTrackerApp:
 
         self.status_var.set(values[2])  # Set the status combobox to the current status of the selected application
 
+         # Set the editing mode to True and change the button text to "Save Changes"
+        self.editing_mode = True
+        self.edit_save_button.config(text="Save Changes", bg="#f4c542") # light yellow/orange color for the Save button
+        # Disable the Add button while editing
+        self.add_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Add button
+        self.delete_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Delete button
+
 
 
 
@@ -130,23 +132,9 @@ class JobTrackerApp:
         if not self.editing_mode:
             # START EDITING
             self.begin_edit_mode()
-
-            # Set the editing mode to True and change the button text to "Save Changes"
-            self.editing_mode = True
-            self.edit_save_button.config(text="Save Changes", bg="#f4c542") # light yellow/orange color for the Save button
-            # Disable the Add button while editing
-            self.add_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Add button
-            self.delete_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Delete button
         else:
             # SAVE CHANGES
             self.save_edited_application()
-
-            # Set the editing mode to False and change the button text to "Edit Selected"
-            self.editing_mode = False
-            self.edit_save_button.config(text="Edit Selected", bg="#87cefa") # Back to Light blue color for the Edit button
-            # Re-enable the Add button
-            self.add_button.config(state="normal", bg="#90ee90") # Back to Light green color for the Add button
-            self.delete_button.config(state="normal", bg="#ff6d6a") # Back to Light red color for the Delete button
 
 
 
@@ -156,13 +144,13 @@ class JobTrackerApp:
     # This function is called when the user clicks the "Save Changes" button
     # It updates the selected application in the database with the new values
     def save_edited_application(self):
-        if self.selected_id is None:
-            messagebox.showwarning("Selection Error", "Please select an application to update.")
-            return
-        
-        company = self.company_entry.get().strip()
-        position = self.position_entry.get().strip()
-        status = self.status_var.get()
+        # FIXME: THIS CODE MIGHT NOW BE REDUNDANT
+        #if self.selected_id is None:
+        #    messagebox.showwarning("Selection Error", "Please select an application to update.")
+        #    return
+
+        # Get input values from the entry fields
+        company, position, status = self.get_form_entry_values()
 
         if not company or not position:
             messagebox.showerror("Input Error", "Please enter BOTH company and position.")
@@ -171,17 +159,21 @@ class JobTrackerApp:
         update_application_in_db(int(self.selected_id), company, position, status)
         self.selected_id = None
         self.refresh_applications()
+        self.clear_entry_fields()
 
-        self.company_entry.delete(0, tk.END) # Clear the company entry field
-        self.position_entry.delete(0, tk.END) # Clear the position entry field
-        self.status_combo.current(0)  # Reset the status combobox to "Pending"
+        # Set the editing mode to False and change the button text to "Edit Selected"
+        self.editing_mode = False
+        self.edit_save_button.config(text="Edit Selected", bg="#87cefa") # Back to Light blue color for the Edit button
+        # Re-enable the Add and Delete button
+        self.add_button.config(state="normal", bg="#90ee90") # Back to Light green color for the Add button
+        self.delete_button.config(state="normal", bg="#ff6d6a") # Back to Light red color for the Delete button
 
 
 
 
 
-    # TODO: Add Delete Button at the very bottom of the GUI
-    # GOING TO ADD A DELETE ROW FUNCTION HERE
+    # This function is called when the user clicks the "Delete Selected" button
+    # It deletes the selected application from the database
     def delete_application(self):
         selected = self.tree.focus()  # Get the currently selected item in the treeview
         if not selected:
@@ -200,6 +192,7 @@ class JobTrackerApp:
 
 
 
+
     # Refresh the treeview to show the latest applications
     def refresh_applications(self):
         # Clear the treeview before inserting new data
@@ -209,6 +202,24 @@ class JobTrackerApp:
         # Calls function from 'db.py' to get all applications
         # This function returns a list of tuples containing the company, position, and status
         # It then inserts each application into the treeview
-        for app in get_all_applications():
+        for app in get_all_applications_from_db():
             app_id, company, position, status = app
             self.tree.insert("", tk.END, text=str(app_id), values=(company, position, status))
+
+
+
+
+
+
+    # This function clears the entry fields
+    def clear_entry_fields(self):
+        self.company_entry.delete(0, tk.END)
+        self.position_entry.delete(0, tk.END)
+        self.status_combo.current(0) # Reset the status combobox to "Pending"
+
+    # This function retrieves and the values from the entry fields and returns them
+    def get_form_entry_values(self):
+        company = self.company_entry.get().strip()
+        position = self.position_entry.get().strip()
+        status = self.status_var.get()
+        return company, position, status

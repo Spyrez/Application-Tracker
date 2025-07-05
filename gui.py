@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from db import insert_application, get_all_applications, update_application_in_db
+from db import insert_application, get_all_applications, update_application_in_db, delete_application_in_db
 
 class JobTrackerApp:
     def __init__(self, root):
@@ -45,6 +45,16 @@ class JobTrackerApp:
             bg="#87cefa" # Light blue color for the Edit button
         )
         self.edit_save_button.grid(row=3, column=0, pady=5) # Edit button to edit selected application
+        # Delete Button
+        self.delete_button = tk.Button(
+            root,
+            text="Delete Selected",
+            command=self.delete_application,
+            fg="black",
+            bg="#ff6d6a" # Light red color for the Delete button
+        )
+        self.delete_button.grid(row=5, columnspan=2) # Delete button to delete selected application
+
 
         # Treeview table to display applications
         # It has three columns: Company, Position, and Status
@@ -115,7 +125,7 @@ class JobTrackerApp:
 
 
 
-
+    # This function is called when the user clicks the "Edit Selected" button and "Save Changes" button
     def toggle_edit_or_save(self):
         if not self.editing_mode:
             # START EDITING
@@ -126,6 +136,7 @@ class JobTrackerApp:
             self.edit_save_button.config(text="Save Changes", bg="#f4c542") # light yellow/orange color for the Save button
             # Disable the Add button while editing
             self.add_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Add button
+            self.delete_button.config(state="disabled", bg="#d3d3d3") # Greyed out color for the Delete button
         else:
             # SAVE CHANGES
             self.save_edited_application()
@@ -135,6 +146,7 @@ class JobTrackerApp:
             self.edit_save_button.config(text="Edit Selected", bg="#87cefa") # Back to Light blue color for the Edit button
             # Re-enable the Add button
             self.add_button.config(state="normal", bg="#90ee90") # Back to Light green color for the Add button
+            self.delete_button.config(state="normal", bg="#ff6d6a") # Back to Light red color for the Delete button
 
 
 
@@ -164,6 +176,25 @@ class JobTrackerApp:
         self.position_entry.delete(0, tk.END) # Clear the position entry field
         self.status_combo.current(0)  # Reset the status combobox to "Pending"
 
+
+
+
+
+    # TODO: Add Delete Button at the very bottom of the GUI
+    # GOING TO ADD A DELETE ROW FUNCTION HERE
+    def delete_application(self):
+        selected = self.tree.focus()  # Get the currently selected item in the treeview
+        if not selected:
+            messagebox.showwarning("Selection Error", "Please select an application to delete.")
+            return
+        
+        app_id_to_delete = self.tree.item(selected, "text")  # Get the ID of the selected application
+        confirm = messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this application?")
+        if confirm:
+            # Calls function from 'db.py' to delete the application from the database
+            # It passes the app_id of the selected application
+            delete_application_in_db(int(app_id_to_delete))
+            self.refresh_applications()  # Refresh the treeview after deletion
 
 
 
